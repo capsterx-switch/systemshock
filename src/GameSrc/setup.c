@@ -502,6 +502,7 @@ int WaitForKey(ulong ticks) {
         SDLDraw();
 
         kbs_event ev = kb_next();
+	printf("Setup kb next\n");
         ch = ev.ascii;
         ticks = (ulong)TickCount();
 
@@ -1051,7 +1052,10 @@ uchar intro_key_handler(uiEvent *ev, LGRegion *r, intptr_t user_data) {
     int code = ev->cooked_key_data.code & ~(KB_FLAG_DOWN | KB_FLAG_2ND);
     char old_diff, old_setup_line = curr_setup_line, n = 0;
 
+    printf("intro handler: %d-%d - waiting_for_key=%d setup_mode=%d - %d\n", code, ev->cooked_key_data.code & KB_FLAG_DOWN, waiting_for_key, setup_mode, ev->cooked_key_data.code);
+
     if (ev->cooked_key_data.code & KB_FLAG_DOWN) {
+	    printf("here\n");
         // If in the splash screen, advance
         if (waiting_for_key) {
             waiting_for_key = false;
@@ -1121,6 +1125,7 @@ uchar intro_key_handler(uiEvent *ev, LGRegion *r, intptr_t user_data) {
             break;
 
         case SETUP_DIFFICULTY:
+	    printf("Got code %d\n", code);
             switch (code) {
             case ALT('X'): // Don't print the X when user ALT-X's out of the game
             case ALT('x'):
@@ -1460,6 +1465,7 @@ void setup_start(void) {
         }
         setup_mode = SETUP_JOURNEY;
     }
+    play_intro_anim = FALSE;
 
     if (!start_first_time)
         closedown_game(TRUE);

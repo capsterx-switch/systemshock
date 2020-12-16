@@ -156,7 +156,11 @@ uchar kb_get_cooked(ushort *key) {
     uchar res = FALSE;
     kbs_event ev = kb_next();
     if (ev.code == KBC_NONE)
+    {
+        //printf("no code\n");
         return res;
+    }
+    //printf("Cooking event\n");
     kb_cook(ev, key, &res);
     return res;
 }

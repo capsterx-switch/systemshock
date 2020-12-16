@@ -76,11 +76,35 @@ extern errtype load_da_palette(void);
 extern void CreateDefaultKeybindsFile(void);
 extern void LoadHotkeyKeybinds(void);
 extern void LoadMoveKeybinds(void);
+#ifdef __SWITCH__
+#include <switch/init.h>
+#include <switch/joystick.h>
+#include <errno.h>
+#include <unistd.h>
+#include <switch/keymap.h>
+struct Switch_Key_Map * keymap = NULL;
+#endif
 
 //------------------------------------------------------------------------------------
 //		Main function.
 //------------------------------------------------------------------------------------
 int main(int argc, char **argv) {
+#ifdef __SWITCH__
+  switch_init();
+  //int nsError = nsInitialize();
+  //if (nsError != 0) {
+  //  return 1;
+  //}
+  //socketInitialize(NULL);
+  //nxlinkConnectToHost(true, false);
+  if (chdir("sdmc:/switch/systemshock/") != 0)
+  {
+    printf("Unable to chdir: %s\n", strerror(errno));
+  }
+  char buf[1024];
+  getcwd(buf, sizeof(buf));
+  printf("cwd: %s\n", buf);
+#endif
     // Save the arguments for later
 
     num_args = argc;
@@ -127,9 +151,10 @@ int main(int argc, char **argv) {
 
     // Draw the splash screen
 
+#ifndef __SWITCH__
     INFO("Showing splash screen");
     splash_draw(show_splash);
-
+#endif
     // Start in the Main Menu loop
 
     _new_mode = _current_loop = SETUP_LOOP;
@@ -142,6 +167,11 @@ int main(int argc, char **argv) {
 
     status_bio_end();
     stop_music();
+
+#ifdef SWITCH__
+  switch_deinit();
+#endif
+
 
     return 0;
 }
@@ -159,12 +189,26 @@ bool CheckArgument(char *arg) {
     return false;
 }
 
+
 void InitSDL() {
     SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO
+#ifdef __SWITCH__
+		    | SDL_INIT_GAMECONTROLLER
+#endif
+		) > 0) {
         DEBUG("%s: Init failed", __FUNCTION__);
     }
+#ifdef __SWITCH__
+    switch_joy_init();
+#endif
+
+    keymap = switch_keymap_create();
+    if (!switch_keymap_load_from_file(keymap, "sdmc:/switch/systemshock/keymap.keys")) {
+      printf("Unable to load keymap\n");
+    }
+    
 
     // TODO: figure out some universal set of settings that work...
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);

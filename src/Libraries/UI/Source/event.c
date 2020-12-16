@@ -534,6 +534,7 @@ errtype uiQueueEvent(uiEvent* ev)
       kbs_event kbe;
       for(kbe = kb_next(); kbe.code != KBC_NONE; kbe = kb_next())
       {
+         printf("ui kb next\n");
          uiEvent out;
          mouse_get_xy(&out.pos.x,&out.pos.y);
          out.type = UI_EVENT_KBD_RAW;
@@ -848,7 +849,7 @@ errtype uiPoll(void)
          if (kbe.code != KBC_NONE)
          {
             uchar eaten;
-            // Spew(DSRC_UI_Polling,("uiPoll(): got a keyboard event: <%d,%x>\n",kbe.state,kbe.code));
+             printf("uiPoll(): got a keyboard event: <%d,%x>\n",kbe.state,kbe.code);
             out.pos = mousepos;
             out.type = UI_EVENT_KBD_RAW;
             out.raw_key_data.scancode = kbe.code;
@@ -858,9 +859,13 @@ errtype uiPoll(void)
             {
               ushort cooked;
               uchar result;
-              // Spew(DSRC_UI_Polling,("uiPoll(): cooking keyboard event: <%d,%x>\n",kbe.state,kbe.code));
+               printf("uiPoll(): cooking keyboard event: <%d,%x>\n",kbe.state,kbe.code);
               err = kb_cook(kbe,&cooked,&result);
-              if (err != OK) return err;
+              if (err != OK) 
+	      {
+		      printf("Error %d\n", err);
+		      return err;
+	      }
               if (result)
               {
                out.subtype = cooked;
@@ -873,7 +878,10 @@ errtype uiPoll(void)
 //               kb_clear_state(kbe.code,KBA_STATE);
 //            }
          }
-         else kbdone = TRUE;
+         else {
+	//	 printf("got key none\n");
+		 kbdone = TRUE;
+	 }
       }
       if (!msdone)
       {
@@ -938,6 +946,7 @@ errtype uiFlush(void)
 {
    uiEvent* e;
    kbs_event kbe = kb_next();
+   printf("ui flush kb next\n");
    mouse_flush();
    
    while (kbe.code != KBC_NONE)
@@ -958,6 +967,7 @@ uchar uiCheckInput(void)
    kbs_event kbe;
    ss_mouse_event mse;
    kbe = kb_next();
+   printf("ui check input kb next\n");
    if (kbe.code != KBC_NONE)
    {
       ushort cooked;

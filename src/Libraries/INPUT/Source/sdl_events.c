@@ -57,7 +57,7 @@ static void addKBevent(const kbs_event *ev) {
         kbEvents[nextKBevent] = *ev;
         ++nextKBevent;
     } else {
-        // printf("WTF, the kbEvents queue is full?!");
+        //printf("WTF, the kbEvents queue is full?!");
         // drop the oldest event
         memmove(&kbEvents[0], &kbEvents[1], sizeof(kbs_event) * (kNumKBevents - 1));
         kbEvents[kNumKBevents - 1] = *ev;
@@ -476,12 +476,26 @@ uchar Ascii2Code[95] = {
     0x1E, // }
     0x32  // ~
 };
+#ifdef __SWITCH__
+#include <switch/keymap.h>
+extern struct Switch_Key_Map * keymap;
+#endif
 
 void pump_events(void) {
     SDL_Event ev;
 
     while (SDL_PollEvent(&ev)) {
+#ifdef __SWITCH__
+        if (keymap) {
+          if (switch_keymap_event(keymap, &ev))
+	  {
+            //printf("Skipping this event\n");
+            continue;
+	  }
+	}
+#endif
         switch (ev.type) {
+	//	case 
         case SDL_QUIT:
             // a bit hacky at this place, but this would allow exiting the game via the window's [x] button
             exit(0); // TODO: I guess there is a better way.
@@ -489,9 +503,33 @@ void pump_events(void) {
 
         // TODO: really also handle key up here? the mac code apparently didn't, but where else do
         //       kbs_events with .state == KBS_UP come from?
+#ifdef __SWITCH__
+        /*case SDL_JOYBUTTONDOWN:
+        case SDL_JOYBUTTONUP:
+	{
+
+	    switch (sdlev.jbutton.button) 
+	    {
+              case (int)Switch_Joy::KEY_LSTICK_LEFT:
+                ev.key = JK_LEFT;
+              	break;
+              case (int)Switch_Joy::KEY_LSTICK_UP:
+                ev.key = JK_UP;
+              	break;
+              case (int)Switch_Joy::KEY_LSTICK_DOWN:
+                ev.key = JK_DOWN;
+              	break;
+              case (int)Switch_Joy::KEY_LSTICK_RIGHT:
+                ev.key = JK_RIGHT;
+                break;
+	    };
+	}
+	break;*/
+#endif
         case SDL_KEYUP:
         case SDL_KEYDOWN: {
             uchar c = sdlKeyCodeToSSHOCKkeyCode(ev.key.keysym.sym);
+	    //printf("Got key: %d - %d - %s\n", ev.key.keysym.sym, c, ev.type == SDL_KEYUP ? "UP" : "DOWN");
             if (c != KBC_NONE) {
                 kbs_event keyEvent = {0};
 
@@ -589,12 +627,14 @@ void pump_events(void) {
                     // other cases are handled by text input event below
                     if (ev.key.keysym.sym < 32 || ev.key.keysym.sym > 126 || (mod & KMOD_CTRL) || (mod & KMOD_ALT)) {
                         keyEvent.state = KBS_DOWN;
+	                //printf("key down: %d - %d %c\n", c, ev.key.keysym.sym, keyEvent.ascii);
                         addKBevent(&keyEvent);
 
                         sshockKeyStates[c] = keyEvent.modifiers | KB_MOD_PRESSED;
                     }
                 } else {
                     // key up following text input event case below is handled here
+	            //printf("key up: %d - %d %c\n", c, ev.key.keysym.sym, keyEvent.ascii);
 
                     keyEvent.state = KBS_UP;
                     addKBevent(&keyEvent);
@@ -639,6 +679,7 @@ void pump_events(void) {
 
                 // get code for this printable ascii key
                 int c = Ascii2Code[ch - 32];
+		//printf("Adding key %c - %d - %d\n", c, c, ch);
 
                 keyEvent.code = c;
                 keyEvent.ascii = ch;
@@ -653,6 +694,7 @@ void pump_events(void) {
 
         case SDL_MOUSEBUTTONDOWN:
         case SDL_MOUSEBUTTONUP: {
+//printf("mouse button up\n");
             bool down = (ev.button.state == SDL_PRESSED);
             ss_mouse_event mouseEvent = {0};
             mouseEvent.type = 0;
@@ -840,6 +882,7 @@ kbs_event kb_look_next(void) {
         }
     }
 
+    //printf("nextKBevent=%d\n", nextKBevent);
     if (nextKBevent > 0) {
         retEvent = kbEvents[0];
     }
@@ -872,9 +915,12 @@ void kb_flush(void) {
     // http://mirror.informatimago.com/next/developer.apple.com/documentation/Carbon/Reference/Event_Manager/event_mgr_ref/function_group_5.html#//apple_ref/c/func/FlushEvents
     // FlushEvents(keyDownMask | autoKeyMask, 0);
 
+#ifndef __SWITCH__
     SDL_FlushEvents(SDL_KEYDOWN, SDL_KEYUP); // Note: that's a range!
+    //printf("flushing events\n");
 
     nextKBevent = 0; // this flushes the keyboard events already buffered - TODO is that desirable?
+#endif
 }
 
 //---------------------------------------------------------------

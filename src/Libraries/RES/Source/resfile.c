@@ -99,6 +99,7 @@ void ResAddPath(char *path)
 //		-2 = couldn't open, edit, or create file
 //		-3 = invalid resource file
 //		-4 = memory allocation failure
+#include <unistd.h>
 
 int32_t ResOpenResFile(const char *fname, ResOpenMode mode, bool auxinfo) {
     int32_t filenum;
@@ -106,6 +107,9 @@ int32_t ResOpenResFile(const char *fname, ResOpenMode mode, bool auxinfo) {
     ResFile *prf;
     ResFileHeader fileHead;
     ResDirHeader dirHead;
+    char buf[1024];
+    getcwd(buf, sizeof(buf));
+    printf("opening filename %s: %s\n", buf, fname);
     // uint8_t cd_spoof = FALSE;
 
     //	Find free file number, else return -1

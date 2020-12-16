@@ -390,6 +390,12 @@ if(MINGW)
 	set(WINDOWS_LIBRARIES "mingw32 -mwindows")
 endif(MINGW)
 
+if(SWITCH)
+  set(SWITCH_LIBS "-lswitch-utils -lnx")
+else()
+  set(SWITCH_LIBS "")
+endif(SWITCH)
+
 target_link_libraries(systemshock
 	${WINDOWS_LIBRARIES} # Set it before any linker options! Beware WinMain@16 error!!
 	GAME_LIB
@@ -415,7 +421,33 @@ target_link_libraries(systemshock
 	${FLUIDSYNTH_LIBRARIES}
 	${OPENGL_LIBRARIES}
 	${ALSA_LIBRARIES}
+	${SWITCH_LIBS}
 )
+if (SWITCH)
+  target_link_libraries(systemshock nx)
+  target_link_libraries(systemshock mpg123)
+  target_link_libraries(systemshock opusfile)
+  target_link_libraries(systemshock opus)
+  target_link_libraries(systemshock vorbisfile)
+  target_link_libraries(systemshock vorbis)
+  target_link_libraries(systemshock ogg)
+  target_link_libraries(systemshock modplug)
+  target_link_libraries(systemshock EGL)
+  target_link_libraries(systemshock glapi)
+  target_link_libraries(systemshock drm_nouveau)
+  target_link_libraries(systemshock nx)
+  target_link_libraries(systemshock SDL2)
+  find_program(ELF2NRO elf2nro)
+  find_program(NACPTOOL nacptool)
+  find_program(UAM uam)
+  add_custom_command(OUTPUT control.nacp
+     COMMAND ${NACPTOOL} --create "systemshock" "capsterx" "v1" ${CMAKE_BINARY_DIR}/control.nacp)
+  add_custom_target(systemshock.nro ALL
+  	${ELF2NRO} ${CMAKE_BINARY_DIR}/systemshock ${CMAKE_BINARY_DIR}/systemshock.nro --nacp=${CMAKE_BINARY_DIR}/control.nacp -
+  	        DEPENDS systemshock control.nacp)
+else()
+endif()
+
 
 # Turn on address sanitizing if wanted
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/externals/sanitizers/cmake" ${CMAKE_MODULE_PATH})
