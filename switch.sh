@@ -17,3 +17,5 @@ fi
 
 cmake -DENABLE_FLUIDSYNTH=OFF -DSDL2_MIXER_LIBRARY=$DEVKITPRO/portlibs/switch/lib/libSDL2_mixer.a -DSDL2_DIR=/opt/devkitpro/portlibs/switch/lib/cmake/SDL2 -DCMAKE_TOOLCHAIN_FILE=${SWITCH_UTILS}/cmake/Toolchain-cross-Switch.cmake -DENABLE_SDL2=ON -DENABLE_OPENGL=OFF -DOPENGL_EGL_INCLUDE_DIR=$DEVKITPRO/portlibs/switch/include -DOPENGL_INCLUDE_DIR=$DEVKITPRO/portlibs/switch/include -DOPENGL_EGL_LIBRARY=$DEVKITPRO/portlibs/switch/lib/libEGL.a  ..
 
+make VERBOSE=1
+
