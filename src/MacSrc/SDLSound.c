@@ -19,6 +19,7 @@ int snd_start_digital(void) {
 
     // Startup the sound system
 
+#ifndef __SWITCH__
     SDL_AudioSpec spec, obtained;
     spec.freq = 48000;
     spec.format = AUDIO_S16SYS;
@@ -36,6 +37,7 @@ int snd_start_digital(void) {
         INFO("Opened Music Stream, deviceID %d, freq %d, size %d, format %d, channels %d, samples %d", device,
              obtained.freq, obtained.size, obtained.format, obtained.channels, obtained.samples);
     }
+#endif
 
     if (Mix_Init(MIX_INIT_MP3) < 0) {
         ERROR("%s: Init failed", __FUNCTION__);
