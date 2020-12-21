@@ -7,6 +7,9 @@ static snd_digi_parms digi_parms_by_channel[SND_MAX_SAMPLES];
 
 #include <SDL_mixer.h>
 
+void setup_audio();
+void setup_mixer();
+
 static Mix_Chunk *samples_by_channel[SND_MAX_SAMPLES];
 
 extern SDL_AudioStream *cutscene_audiostream;
@@ -17,45 +20,12 @@ extern void MusicCallback(void *userdata, Uint8 *stream, int len);
 
 int snd_start_digital(void) {
 
-    // Startup the sound system
-
-#ifndef __SWITCH__
-    SDL_AudioSpec spec, obtained;
-    spec.freq = 48000;
-    spec.format = AUDIO_S16SYS;
-    spec.channels = 2;
-    spec.samples = 2048;
-    spec.callback = AudioStreamCallback;
-    spec.userdata = (void *)&cutscene_audiostream;
-
-    extern SDL_AudioDeviceID device;
-    device = SDL_OpenAudioDevice(NULL, 0, &spec, &obtained, 0);
-
-    if (device == 0) {
-        ERROR("Could not open SDL audio: %s", SDL_GetError());
-    } else {
-        INFO("Opened Music Stream, deviceID %d, freq %d, size %d, format %d, channels %d, samples %d", device,
-             obtained.freq, obtained.size, obtained.format, obtained.channels, obtained.samples);
-    }
-#endif
-
-    if (Mix_Init(MIX_INIT_MP3) < 0) {
-        ERROR("%s: Init failed", __FUNCTION__);
-    }
-
-    if (Mix_OpenAudio(48000, AUDIO_S16SYS, 2, 2048) < 0) {
-        ERROR("%s: Couldn't open audio device", __FUNCTION__);
-    }
-
-    Mix_AllocateChannels(SND_MAX_SAMPLES);
-
-    Mix_HookMusic(MusicCallback, (void *)&MusicDev);
-    Mix_VolumeMusic(MIX_MAX_VOLUME); // use max volume for music stream
-
     InitReadXMI();
 
-    atexit(Mix_CloseAudio);
-    atexit(SDL_CloseAudio);
+    setup_mixer();
+
+    //atexit(Mix_CloseAudio);
+    //atexit(SDL_CloseAudio);
 
     return OK;
 }
@@ -175,7 +145,54 @@ int MacTuneLoadTheme(char *theme_base, int themeID) {
     return OK;
 }
 
-void MacTuneKillCurrentTheme(void) { StopTheMusic(); }
+void setup_mixer()
+{
+    extern SDL_AudioDeviceID device;
+    if (device != 0)
+    {
+      SDL_CloseAudioDevice(device);
+      device = 0;
+    }
+    if (Mix_Init(MIX_INIT_MP3) < 0) {
+        ERROR("%s: Init failed", __FUNCTION__);
+    }
+
+    if (Mix_OpenAudio(48000, AUDIO_S16SYS, 2, 2048) < 0) {
+        ERROR("%s: Couldn't open audio device", __FUNCTION__);
+    }
+
+    Mix_AllocateChannels(SND_MAX_SAMPLES);
+
+    Mix_HookMusic(MusicCallback, (void *)&MusicDev);
+    Mix_VolumeMusic(MIX_MAX_VOLUME); // use max volume for music stream
+}
+
+void setup_audio()
+{
+    Mix_CloseAudio();
+
+    SDL_AudioSpec spec, obtained;
+    spec.freq = 48000;
+    spec.format = AUDIO_S16SYS;
+    spec.channels = 2;
+    spec.samples = 2048;
+    spec.callback = AudioStreamCallback;
+    spec.userdata = (void *)&cutscene_audiostream;
+
+    extern SDL_AudioDeviceID device;
+    device = SDL_OpenAudioDevice(NULL, 0, &spec, &obtained, 0);
+
+    if (device == 0) {
+        ERROR("Could not open SDL audio: %s", SDL_GetError());
+    } else {
+        INFO("Opened Music Stream, deviceID %d, freq %d, size %d, format %d, channels %d, samples %d", device,
+             obtained.freq, obtained.size, obtained.format, obtained.channels, obtained.samples);
+    }
+}
+
+void MacTuneKillCurrentTheme(void) { 
+    StopTheMusic(); 
+}
 
 #else
 
@@ -191,6 +208,8 @@ void MacTuneKillCurrentTheme(void) {}
 snd_digi_parms *snd_sample_parms(int hnd_id) { return &digi_parms_by_channel[0]; }
 bool snd_sample_playing(int hnd_id) { return false; }
 void snd_sample_reload_parms(snd_digi_parms *sdp) {}
+void setup_audio() {}
+void setup_mixer() {}
 
 #endif
 

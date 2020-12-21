@@ -34,6 +34,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "afile.h"
 #include "movie.h"
 
+void setup_audio();
+void setup_mixer();
+
 SDL_AudioStream *cutscene_audiostream = NULL;
 
 static uint8_t *cutscene_audiobuffer = NULL;
@@ -171,6 +174,7 @@ void cutscene_exit(void)
   if (movie_bitmap.bits != NULL) {free(movie_bitmap.bits); movie_bitmap.bits = NULL;}
 
   if (amovie != NULL) {free(amovie); amovie = NULL;}
+  setup_mixer();
 }
 
 
@@ -281,10 +285,10 @@ void cutscene_loop(void)
 }
 
 
-
 short play_cutscene(int id, bool show_credits)
 {
   MacTuneKillCurrentTheme();
+  setup_audio();
 
   cutscene_filehandle = ResOpenFile(cutscene_files[id]);
   if (cutscene_filehandle <= 0) {
