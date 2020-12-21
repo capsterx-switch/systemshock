@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
 
     // FIXME externalize this
     log_set_quiet(0);
-    log_set_level(LOG_INFO);
+    log_set_level(LOG_DEBUG);
 
     INFO("Logger initialized");
 
