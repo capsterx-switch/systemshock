@@ -747,7 +747,10 @@ void pump_events(void) {
             if (ev.motion.state & SDL_BUTTON_RMASK)
                 mouseEvent.buttons |= (1 << MOUSE_RBUTTON);
             mouseEvent.timestamp = mouse_get_time();
-            addMouseEvent(&mouseEvent);
+            if (mouseEvent.buttons != 0)
+	    {
+              addMouseEvent(&mouseEvent);
+	    }
 
             if (TriggerRelMouseMode) {
                 TriggerRelMouseMode = FALSE;

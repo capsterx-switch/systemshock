@@ -178,7 +178,11 @@ void game_loop(void) {
             }
         }
         // KLC - does nothing!         loopLine(GL|0x1D,synchronous_update());
+#ifdef __SWITCH__
+        if (music_on) {
+#else
         if (sfx_on || music_on) {
+#endif
             TRACE("%s: sound_frame_update", __FUNCTION__);
             loopLine(GL | 0x1C, mlimbs_do_ai());
             loopLine(GL | 0x1E, sound_frame_update());

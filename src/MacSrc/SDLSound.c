@@ -68,7 +68,13 @@ void snd_end_sample(int hnd_id) {
     }
 }
 
-bool snd_sample_playing(int hnd_id) { return Mix_Playing(hnd_id); }
+bool snd_sample_playing(int hnd_id) { 
+	if (!music_on)
+	{
+          return false;
+	}
+	return Mix_Playing(hnd_id); 
+}
 
 snd_digi_parms *snd_sample_parms(int hnd_id) { return &digi_parms_by_channel[hnd_id]; }
 

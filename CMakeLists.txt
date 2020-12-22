@@ -2,6 +2,14 @@ cmake_minimum_required(VERSION 3.1)
 
 project(shockolate VERSION 0.7.8)
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
 include(FeatureSummary)
 
 #set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
