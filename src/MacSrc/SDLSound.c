@@ -61,7 +61,10 @@ int snd_sample_play(int snd_ref, int len, uchar *smp, struct snd_digi_parms *dpr
 }
 
 void snd_end_sample(int hnd_id) {
-    Mix_HaltChannel(hnd_id);
+    if (music_on)
+    {
+      Mix_HaltChannel(hnd_id);
+    }
     if (samples_by_channel[hnd_id]) {
         Mix_FreeChunk(samples_by_channel[hnd_id]);
         samples_by_channel[hnd_id] = NULL;
