@@ -4,6 +4,8 @@
 static snd_digi_parms digi_parms_by_channel[SND_MAX_SAMPLES];
 
 #ifdef USE_SDL_MIXER
+    extern uchar music_on;
+    extern uchar sfx_on;
 
 #include <SDL_mixer.h>
 
@@ -148,6 +150,8 @@ int MacTuneLoadTheme(char *theme_base, int themeID) {
 void setup_mixer()
 {
     extern SDL_AudioDeviceID device;
+    sfx_on = 0;
+    music_on = 1;
     if (device != 0)
     {
       SDL_CloseAudioDevice(device);
@@ -169,6 +173,8 @@ void setup_mixer()
 
 void setup_audio()
 {
+    sfx_on = 1;
+    music_on = 0;
     Mix_CloseAudio();
 
     SDL_AudioSpec spec, obtained;

@@ -49,6 +49,9 @@ static uint8_t *audiolog_audiobuffer = NULL;
 static uint8_t *audiolog_audiobuffer_pos = NULL;
 static int audiolog_audiobuffer_size; // in blocks of MOVIE_DEFAULT_BLOCKLEN
 
+void setup_audio();
+void setup_mixer();
+
 int curr_alog = -1;
 int alog_fn = -1;
 uchar audiolog_setting = 1;
@@ -121,10 +124,13 @@ errtype audiolog_play(int email_id) {
 
     audiolog_audiobuffer_pos = audiolog_audiobuffer;
 
+
+
     end_wait();
 
     // bureaucracy
     curr_alog = email_id;
+    setup_audio();
 
     // Duck the music
     if (music_on) {
@@ -137,6 +143,7 @@ errtype audiolog_play(int email_id) {
 }
 
 void audiolog_stop(void) {
+    TRACE("audio log stop");
     if (alog_fn < 0)
         return;
 
@@ -173,9 +180,12 @@ void audiolog_stop(void) {
         _new_mode = SETUP_LOOP;
         chg_set_flg(GL_CHG_LOOP);
     }
+    setup_mixer();
+    TRACE("audio log stop");
 }
 
 errtype audiolog_loop_callback(void) {
+    TRACE("audio log loopback");
     if (cutscene_audiostream) {
         SDL_PauseAudioDevice(device, 0);
 
